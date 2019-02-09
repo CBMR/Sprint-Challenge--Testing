@@ -1,5 +1,6 @@
 const request = require('supertest');
 const server = require('./server');
+const db = require('../data/dbConfig')
 
 describe('testing the route handlers', () => {
   describe('testing GET /games', () => {
@@ -9,20 +10,23 @@ describe('testing the route handlers', () => {
       expect(response.status).toBe(200)
     })
     
-    test('should respond with an array of length 2', async () => {
+    test('should respond with a json object', async () => {
       const response = await request(server).get('/games')
 
-      expect(response.body.length).toBe(2)
+      expect(response.type).toMatch(/json/i)
     })
     
     test('should respond with an array of objects', async () => {
       const response = await request(server).get('/games')
 
-      expect(response.body).toEqual([{title: "Red Dead Redemption", genre: "RPG", releaseYear: 2018}, {title: "God of War", genre: "RPG", releaseYear: 2018}])
+      expect(response.body).toEqual([])
     })
   })
 
   describe('testing POST /games', () => {
+    afterEach( async () => {
+      await db('games').truncate()
+    })
     test('should respond with status 201 if successful', async () => {
       const body = {title: "Spiderman", genre: "RPG", releaseYear: 2018}
       const response = await request(server).post('/games').send(body)
